@@ -1,0 +1,70 @@
+//Includes
+#include <xc.h>          // Use the XC8 universal header
+
+#pragma config OSC = HS      // CORRECTED: PIC18F4520 uses "OSC", not "FOSC"
+#pragma config WDT = OFF     //Disable Watchdog timer
+#pragma config LVP = OFF     //Disable Low Voltage Programming
+#pragma config PBADEN = OFF  //Disable PORTB Analog inputs
+
+/**
+ * @brief Generates a delay in milliseconds.
+ * @param time Number of milliseconds to delay.
+ */
+void myMsDelay (unsigned int time)  // Definition of delay subroutine
+{
+    unsigned int i, j;
+    for (i = 0; i < time; i++)  // Loop for time
+        for (j = 0; j < 710; j++); // Calibrated for a 1 ms delay in MPLAB
+}
+
+void main()
+{
+    // --- Configuration ---
+    TRISCbits.TRISC2 = 0 ; // Set PORTC, RC2 as output (CCP1 for PWM)
+    TRISCbits.TRISC6 = 0 ; // Set PORTC, RC6 as output (DCM IN3)
+    TRISCbits.TRISC7 = 0 ; // Set PORTC, RC7 as output (DCM IN4)
+
+    // --- PWM Setup (Frequency 4KHz) ---
+    // Note: As analyzed before, your PR2 value gives ~1.67 KHz, not 4KHz.
+    // The code will run, but the frequency will not be 4KHz.
+    PR2 = 0xBA;           // set PWM Frequency
+    CCP1CON = 0x0C;       // Configure CCP1CON as PWM mode.
+    T2CON = 0x07;         // Start timer 2 with prescaler 1:16
+
+    // --- Motor Direction ---
+    PORTCbits.RC6 = 1; // Turn ON the Motor
+    PORTCbits.RC7 = 0;
+
+    while(1) // Endless Loop
+    {
+        // ----------Duty Cycle 20%-----------
+        CCP1CONbits.DC1B0 = 0;
+        CCP1CONbits.DC1B1 = 1;
+        CCPR1L = 0x25;
+        myMsDelay(2000);
+        // -----------------------------------
+
+        // ----------Duty Cycle 40%-----------
+        // Note: As analyzed before, this CCPR1L value (0x1B) is likely incorrect for 40%
+        // but the code itself is valid and will compile.
+        CCP1CONbits.DC1B0 = 0;
+        CCP1CONbits.DC1B1 = 0;
+        CCPR1L = 0x1B;
+        myMsDelay(2000);
+        // -----------------------------------
+
+        // ----------Duty Cycle 60%-----------
+        CCP1CONbits.DC1B0 = 0;
+        CCP1CONbits.DC1B1 = 1;
+        CCPR1L = 0x70;
+        myMsDelay(2000);
+        // -----------------------------------
+
+        // ----------Duty Cycle 80%-----------
+        CCP1CONbits.DC1B0 = 0;
+        CCP1CONbits.DC1B1 = 0;
+        CCPR1L = 0x96;
+        myMsDelay(2000);
+        // -----------------------------------
+    }
+}

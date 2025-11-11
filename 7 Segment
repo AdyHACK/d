@@ -1,0 +1,42 @@
+#include <reg51.h>
+
+void display(unsigned char byte);
+void delay(unsigned int time);
+
+void main(void)
+{
+    P0 = 0x00;
+    P1 = 0xFF;
+    while(1)
+    {
+        display(0xC0); // 0
+        display(0xF9); // 1
+        display(0xA4); // 2
+        display(0xB0); // 3
+        display(0x99); // 4
+        display(0x92); // 5
+        display(0x82); // 6
+        display(0xF8); // 7
+        display(0x80); // 8
+        display(0x90); // 9
+        display(0x88); // A
+        display(0x83); // B
+        display(0xC6); // C
+        display(0xA1); // D
+        display(0x86); // E
+        display(0x8E); // F
+    }
+}
+
+void display(unsigned char byte)
+{
+    P0 = byte;
+    delay(200);
+}
+
+void delay(unsigned int time)
+{
+    unsigned int i, j;
+    for(i = 0; i < time; i++)
+        for(j = 0; j < 1000; j++);
+}

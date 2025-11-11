@@ -1,0 +1,64 @@
+#include <xc.h>
+
+// ================= CONFIGURATION BITS =================
+#pragma config FOSC = HS      // High-speed oscillator
+#pragma config WDTE = OFF     // Watchdog Timer disabled
+#pragma config PWRTE = ON     // Power-up Timer enabled
+#pragma config BOREN = ON     // Brown-out Reset enabled
+#pragma config LVP = OFF      // Low-voltage programming disabled
+#pragma config CPD = OFF, WRT = OFF, CP = OFF
+
+#define _XTAL_FREQ 20000000   // 20 MHz crystal frequency
+
+// ================= PIN DEFINITIONS =================
+#define BUTTON1 PORTBbits.RB0   // Push Button 1
+#define BUTTON2 PORTBbits.RB1   // Push Button 2
+#define RELAY   LATCbits.LATC0  // Relay output
+#define BUZZER  LATCbits.LATC1  // Buzzer output
+
+void main(void)
+{
+    // ========== I/O Configuration ==========
+    TRISBbits.TRISB0 = 1; // Button 1 input
+    TRISBbits.TRISB1 = 1; // Button 2 input
+    TRISD = 0x00;          // PORTD as output (for LEDs)
+    TRISCbits.TRISC0 = 0;  // Relay output
+    TRISCbits.TRISC1 = 0;  // Buzzer output
+
+    LATD = 0x00;   // Initially all LEDs OFF
+    RELAY = 0;     // Relay OFF
+    BUZZER = 0;    // Buzzer OFF
+
+    while(1)
+    {
+        // ========= PUSH BUTTON 1: Left to Right =========
+        if(BUTTON1 == 0)  // Active LOW
+        {
+            RELAY = 1;
+            BUZZER = 1;
+
+            // LED chase from left to right (RD0 → RD7)
+            for(unsigned char i = 0; i < 8; i++)
+            {
+                LATD = (1 << i);   // Turn ON one LED at a time
+                __delay_ms(200);
+            }
+            LATD = 0x00; // Turn OFF all LEDs at end
+        }
+
+        // ========= PUSH BUTTON 2: Right to Left =========
+        if(BUTTON2 == 0)  // Active LOW
+        {
+            RELAY = 0;
+            BUZZER = 0;
+
+            // LED chase from right to left (RD7 → RD0)
+            for(int i = 7; i >= 0; i--)
+            {
+                LATD = (1 << i);
+                __delay_ms(200);
+            }
+            LATD = 0x00; // Turn OFF all LEDs
+        }
+    }
+}

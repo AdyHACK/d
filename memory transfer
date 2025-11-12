@@ -1,0 +1,15 @@
+ORG 000H
+MOV DPTR,#100H ; Load DPTR with address 0100H
+MOV R0,#30H ; Destination in internal RAM
+MOV R7,#08H ; Number of bytes to move
+UP:
+CLR A
+MOVC A, @A+DPTR ; ? Corrected: Fetch byte from code memory
+MOV @R0, A ; Store it in internal RAM
+INC DPTR
+INC R0
+DJNZ R7, UP
+HERE:SJMP HERE
+ORG 100H
+DB 32H,34H,0FFH,0BCH,22H,33H,44H,55H
+END
